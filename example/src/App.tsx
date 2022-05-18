@@ -189,15 +189,16 @@ class App extends React.Component<any, any> {
     await this.subscribeProvider(provider);
 
     await provider.enable();
+
+    console.log('BEFORE call init WEB3')
     const web3: any = initWeb3(provider);
 
     const accounts = await web3.eth.getAccounts();
+    const networkId = await web3.eth.net.getId();
+    const chainId = await web3.eth.chainId();
+    console.log('AFTER call init WEB3 ', { accounts, networkId, chainId });
 
     const address = accounts[0];
-
-    const networkId = await web3.eth.net.getId();
-
-    const chainId = await web3.eth.chainId();
 
     await this.setState({
       web3,
@@ -239,7 +240,7 @@ class App extends React.Component<any, any> {
   public getNetwork = () => getChainData(this.state.chainId).network;
 
   public getProviderOptions = () => {
-    const infuraId = process.env.REACT_APP_INFURA_ID || 'e6a5ec1d69b0414a9359975a83c0f0ac';
+    const infuraId = process.env.REACT_APP_INFURA_ID;
     const providerOptions = {
       walletconnect: {
         package: WalletConnect,
