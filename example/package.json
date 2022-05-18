@@ -165,5 +165,8 @@
     "presets": [
       "react-app"
     ]
+  },
+  "devDependencies": {
+    "@types/web3-provider-engine": "^14.0.1"
   }
 }

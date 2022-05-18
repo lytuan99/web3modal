@@ -70,7 +70,7 @@ export class ProviderController {
     });
     // parse custom providers
     Object.keys(this.providerOptions)
-      .filter(key => key.startsWith("custom-"))
+      .filter(key => key.startsWith("custom-")) // filter ra các custom provider: in wallet
       .map(id => {
         if (id && this.providerOptions[id]) {
           const options = this.providerOptions[id];
@@ -207,6 +207,7 @@ export class ProviderController {
         this.setCachedProvider(id);
       }
     } catch (error) {
+      console.log('hihihi')
       this.eventController.trigger(ERROR_EVENT, error);
     }
   };

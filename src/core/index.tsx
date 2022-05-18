@@ -92,6 +92,8 @@ export class Core {
           )
         );
       }
+
+      console.log('connect to: ', provider);
       await this.providerController.connectTo(provider.id, provider.connector);
     });
 

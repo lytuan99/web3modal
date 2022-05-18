@@ -36,9 +36,13 @@ import {
   ETH_SIGN,
   PERSONAL_SIGN,
   DAI_BALANCE_OF,
-  DAI_TRANSFER
+  DAI_TRANSFER,
+  IN_WALLET_NAME
 } from "./constants";
 import { callBalanceOf, callTransfer } from "./helpers/web3";
+
+import inWalletIcon from './assets/xdai.png';
+import InWalletProvider from "./inWalletProvider";
 
 const SLayout = styled.div`
   position: relative;
@@ -137,6 +141,7 @@ const INITIAL_STATE: IAppState = {
 };
 
 function initWeb3(provider: any) {
+  console.log('init web3: ', provider);
   const web3: any = new Web3(provider);
 
   web3.eth.extend({
@@ -179,6 +184,8 @@ class App extends React.Component<any, any> {
   public onConnect = async () => {
     const provider = await this.web3Modal.connect();
 
+    console.log({ provider, state: this.state });
+
     await this.subscribeProvider(provider);
 
     await provider.enable();
@@ -204,6 +211,8 @@ class App extends React.Component<any, any> {
   };
 
   public subscribeProvider = async (provider: any) => {
+    console.log('Subscribe Provider: ', provider);
+
     if (!provider.on) {
       return;
     }
@@ -230,7 +239,7 @@ class App extends React.Component<any, any> {
   public getNetwork = () => getChainData(this.state.chainId).network;
 
   public getProviderOptions = () => {
-    const infuraId = process.env.REACT_APP_INFURA_ID;
+    const infuraId = process.env.REACT_APP_INFURA_ID || 'e6a5ec1d69b0414a9359975a83c0f0ac';
     const providerOptions = {
       walletconnect: {
         package: WalletConnect,
@@ -246,6 +255,24 @@ class App extends React.Component<any, any> {
         options: {
           appName: "Web3Modal Example App",
           infuraId
+        }
+      },
+      [IN_WALLET_NAME]: {
+        display: {
+          logo: inWalletIcon,
+          name: "In wallet Provider",
+          description: "Connect to your in wallet provider account"
+        },
+        package: InWalletProvider,
+        options: {
+          infuraId
+        },
+        connector: async (ProviderPackage: any, options: any) => {
+          const provider = new ProviderPackage(options);
+          console.log('run in connector');
+          await provider.enable();
+    
+          return provider;
         }
       }
     };
@@ -474,6 +501,8 @@ class App extends React.Component<any, any> {
   };
 
   public render = () => {
+    console.log({ state: this.state });
+
     const {
       assets,
       address,
@@ -532,7 +561,7 @@ class App extends React.Component<any, any> {
                   </STestButtonContainer>
                 </Column>
                 <h3>Balances</h3>
-                <AccountAssets chainId={chainId} assets={assets} />{" "}
+                <AccountAssets chainId={chainId} assets={assets} />
               </SBalances>
             ) : (
               <SLanding center>
