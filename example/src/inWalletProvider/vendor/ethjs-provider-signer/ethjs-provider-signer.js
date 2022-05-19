@@ -292,6 +292,7 @@ function EthRPC(cprovider, options) {
     jsonSpace: optionsObject.jsonSpace || 0,
     max: optionsObject.max || 9999999999999
   });
+
   self.idCounter = Math.floor(Math.random() * self.options.max);
   self.setProvider = function (provider) {
     if (typeof provider !== 'object') {

@@ -1,11 +1,15 @@
 import { JsonRpcPayload, JsonRpcResponse } from "web3-core-helpers";
 import eth_rpc_errors_1 from "eth-rpc-errors";
 import { JSONRPCMethod, JSONRPCRequest } from "./JSONRPC";
-import { SignerProvider } from "./vendor/ethjs-provider-signer/ethjs-provider-signer";
+import SignerProvider from "./vendor/ethjs-provider-signer";
+import { createVaultKeystore } from "./lightWallet";
 
 const DEFAULT_CHAIN_ID_KEY = "defaultChainId";
 interface InWalletProviderOptions {
   infuraId: string;
+  signTransaction: () => {};
+  accounts?: (error: any, result: []) => {};
+  [key: string]: any;
 }
 
 interface RequestArguments {
@@ -27,69 +31,126 @@ interface AbstractProvider {
   request?(args: RequestArguments): Promise<any>;
 }
 
-class InWalletProvider extends SignerProvider implements AbstractProvider {
+class InWalletProvider extends SignerProvider {
   private infuraId: string;
+  private rpcPath: string;
+  private addresses: string[] = [];
   connected?: boolean | undefined;
 
-  constructor(path: String, options: InWalletProviderOptions) {
-    super(path, options);
+  constructor(options: InWalletProviderOptions) {
+    super(
+      `https://${options.network || "rinkeBy"}.infura.io/v3/${
+        options.infuraId
+      }`,
+      options
+    );
+    const path = `https://${options.network || "rinkeBy"}.infura.io/v3/${
+      options.infuraId
+    }`;
     this.infuraId = options.infuraId;
+    this.rpcPath = path;
   }
 
-  sendAsync(payload: JsonRpcPayload, callback: (error: Error | null, result?: JsonRpcResponse) => void): void {
+  sendAsync(
+    payload: JsonRpcPayload,
+    callback: (error: Error | null, result?: JsonRpcResponse) => void
+  ): void {
+    console.log("payload send async: ", payload);
     super.sendAsync(payload, callback);
   }
 
-
-  enable() {
-    // Do something to connect using infuraId
+  async enable() {
+    // TODO: check xem đã có keystore trong localStorage chưa,
+    // Nếu chưa có thì yêu cầu tạo hoặc import
+    // Nếu có rồi thì thực hiện tạo
     console.log("Connecting in wallet....");
+
+    const inputParams = {
+      password: "111111",
+      seedPhrase:
+        "illegal practice attend twenty excess credit canyon loyal return giggle fiber syrup",
+      hdPathString: `m/44'/60'/0'/0`
+    };
+    try {
+      const keystore: any = await createVaultKeystore(inputParams);
+
+      // let pwDerivedKey;
+      // keystore.keyFromPassword(inputParams.password, (err: any, data: any) => {
+      //   if (err !== null) throw new Error(err);
+      //   pwDerivedKey = data;
+      // });
+
+      // Đoạn này lấy từ bên hot wallet
+      const keyFromPasswordPromise = (param: any) => {
+        // eslint-disable-line no-inner-declarations
+        return new Promise((resolve, reject) => {
+          keystore.keyFromPassword(param, (err: any, data: any) => {
+            if (err !== null) return reject(err);
+            return resolve(data);
+          });
+        });
+      };
+
+      const pwDerivedKey = await keyFromPasswordPromise(inputParams.password);
+
+      keystore.generateNewAddress(pwDerivedKey, 1);
+
+      console.log("Keystore vault: ", keystore);
+      this.addresses = keystore.addresses;
+
+      this.options = {
+        signTransaction: keystore.signTransaction.bind(keystore),
+        accounts: (cb: any) => cb(null, keystore.getAddresses())
+      };
+    } catch (error) {
+      console.error("Create keystore vault error", error);
+    }
   }
 
   disconnect() {
     console.log("Dis connect in wallet....");
   }
 
-  async request(args: any): Promise<any> {
-    if (!args || typeof args !== "object" || Array.isArray(args)) {
-      throw eth_rpc_errors_1.ethErrors.rpc.invalidRequest({
-        message: "Expected a single, non-array, object argument.",
-        data: args
-      });
-    }
-    const { method, params } = args;
-    if (typeof method !== "string" || method.length === 0) {
-      throw eth_rpc_errors_1.ethErrors.rpc.invalidRequest({
-        message: "'args.method' must be a non-empty string.",
-        data: args
-      });
-    }
-    if (
-      params !== undefined &&
-      !Array.isArray(params) &&
-      (typeof params !== "object" || params === null)
-    ) {
-      throw eth_rpc_errors_1.ethErrors.rpc.invalidRequest({
-        message: "'args.params' must be an object or array if provided.",
-        data: args
-      });
-    }
+  // async request(args: any): Promise<any> {
+  //   if (!args || typeof args !== "object" || Array.isArray(args)) {
+  //     throw eth_rpc_errors_1.ethErrors.rpc.invalidRequest({
+  //       message: "Expected a single, non-array, object argument.",
+  //       data: args
+  //     });
+  //   }
+  //   const { method, params } = args;
+  //   if (typeof method !== "string" || method.length === 0) {
+  //     throw eth_rpc_errors_1.ethErrors.rpc.invalidRequest({
+  //       message: "'args.method' must be a non-empty string.",
+  //       data: args
+  //     });
+  //   }
+  //   if (
+  //     params !== undefined &&
+  //     !Array.isArray(params) &&
+  //     (typeof params !== "object" || params === null)
+  //   ) {
+  //     throw eth_rpc_errors_1.ethErrors.rpc.invalidRequest({
+  //       message: "'args.params' must be an object or array if provided.",
+  //       data: args
+  //     });
+  //   }
 
-    const newParams = params === undefined ? [] : params;
+  //   const newParams = params === undefined ? [] : params;
 
-    console.log("Requesting: ", { newParams, args });
-    // const id = this._relayEventManager.makeRequestId();
-    const result = await this._handleSynchronousMethods({
-      method,
-      params: newParams,
-      jsonrpc: "2.0",
-      // id
-    });
-    return result;
-  }
+  //   console.log("Requesting: ", { newParams, args });
+  //   // const id = this._relayEventManager.makeRequestId();
+  //   const result = await this._handleSynchronousMethods({
+  //     method,
+  //     params: newParams,
+  //     jsonrpc: "2.0"
+  //     // id
+  //   });
+  //   return result;
+  // }
 
   _eth_accounts() {
-    return ["0x237988f4aF13190dd4b1b0A45cFA43bcb082739c"];
+    return this.addresses;
   }
 
   _net_version() {

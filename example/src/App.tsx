@@ -184,11 +184,9 @@ class App extends React.Component<any, any> {
   public onConnect = async () => {
     const provider = await this.web3Modal.connect();
 
-    console.log({ provider, state: this.state });
+    console.log('on Connect: ', { provider, state: this.state });
 
     await this.subscribeProvider(provider);
-
-    await provider.enable();
 
     console.log('BEFORE call init WEB3')
     const web3: any = initWeb3(provider);
@@ -319,6 +317,8 @@ class App extends React.Component<any, any> {
 
       // @ts-ignore
       function sendTransaction(_tx: any) {
+
+        console.log('_tx to sendTransaction: ', tx);
         return new Promise((resolve, reject) => {
           web3.eth
             .sendTransaction(_tx)
@@ -329,6 +329,8 @@ class App extends React.Component<any, any> {
 
       // send transaction
       const result = await sendTransaction(tx);
+
+      console.log('Send ETH successfully: ', result);
 
       // format displayed result
       const formattedResult = {
