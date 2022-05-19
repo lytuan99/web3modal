@@ -1,7 +1,7 @@
 import { JsonRpcPayload, JsonRpcResponse } from "web3-core-helpers";
 import eth_rpc_errors_1 from "eth-rpc-errors";
 import { JSONRPCMethod, JSONRPCRequest } from "./JSONRPC";
-import Web3 from "web3";
+import { SignerProvider } from "./vendor/ethjs-provider-signer/ethjs-provider-signer";
 
 const DEFAULT_CHAIN_ID_KEY = "defaultChainId";
 interface InWalletProviderOptions {
@@ -10,7 +10,7 @@ interface InWalletProviderOptions {
 
 interface RequestArguments {
   method: string;
-  params?: any;
+  params?: any[];
   [key: string]: any;
 }
 
@@ -27,22 +27,22 @@ interface AbstractProvider {
   request?(args: RequestArguments): Promise<any>;
 }
 
-class InWalletProvider implements AbstractProvider {
+class InWalletProvider extends SignerProvider implements AbstractProvider {
   private infuraId: string;
   connected?: boolean | undefined;
 
-  constructor(options: InWalletProviderOptions) {
+  constructor(path: String, options: InWalletProviderOptions) {
+    super(path, options);
     this.infuraId = options.infuraId;
   }
 
-  sendAsync(
-    payload: JsonRpcPayload,
-    callback: (error: Error | null, result?: JsonRpcResponse) => void
-  ): void {
-    throw new Error("Method not implemented.");
+  sendAsync(payload: JsonRpcPayload, callback: (error: Error | null, result?: JsonRpcResponse) => void): void {
+    super.sendAsync(payload, callback);
   }
 
+
   enable() {
+    // Do something to connect using infuraId
     console.log("Connecting in wallet....");
   }
 
@@ -77,7 +77,7 @@ class InWalletProvider implements AbstractProvider {
 
     const newParams = params === undefined ? [] : params;
 
-    console.log("Requesting: ", newParams, args);
+    console.log("Requesting: ", { newParams, args });
     // const id = this._relayEventManager.makeRequestId();
     const result = await this._handleSynchronousMethods({
       method,
@@ -89,7 +89,7 @@ class InWalletProvider implements AbstractProvider {
   }
 
   _eth_accounts() {
-    return ["0x36bca92DADA49a5973661815499cF415950139f7"];
+    return ["0x237988f4aF13190dd4b1b0A45cFA43bcb082739c"];
   }
 
   _net_version() {
@@ -101,7 +101,7 @@ class InWalletProvider implements AbstractProvider {
   }
 
   getChainId(): number {
-    const chainIdStr = localStorage.getItem(DEFAULT_CHAIN_ID_KEY) || "1";
+    const chainIdStr = localStorage.getItem(DEFAULT_CHAIN_ID_KEY) || "4";
     return parseInt(chainIdStr, 10);
   }
 

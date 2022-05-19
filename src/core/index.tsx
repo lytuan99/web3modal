@@ -93,7 +93,7 @@ export class Core {
         );
       }
 
-      console.log('connect to: ', provider);
+      console.log("connect to: ", provider);
       await this.providerController.connectTo(provider.id, provider.connector);
     });
 
@@ -134,7 +134,7 @@ export class Core {
   }
 
   public getUserOptions(): IProviderUserOptions[] {
-    return this.userOptions
+    return this.userOptions;
   }
 
   public clearCachedProvider(): void {

@@ -132,8 +132,8 @@ const INITIAL_STATE: IAppState = {
   web3: null,
   provider: null,
   connected: false,
-  chainId: 1,
-  networkId: 1,
+  chainId: 4, // Rinkeby
+  networkId: 4,
   assets: [],
   showModal: false,
   pendingRequest: false,
@@ -304,8 +304,12 @@ class App extends React.Component<any, any> {
       return;
     }
 
-    const tx = await formatTestTransaction(address, chainId);
+    const recipient = "0x46f3fb4BEda36829DfaeC37948859a162A1d0f14";
+    const value = Web3.utils.toWei('0.001', 'ether');
 
+    const tx = await formatTestTransaction(address, recipient, chainId, value);
+
+    console.log('tx when test send transaction: ', tx);
     try {
       // open modal
       this.toggleModal();
@@ -331,8 +335,8 @@ class App extends React.Component<any, any> {
         action: ETH_SEND_TRANSACTION,
         txHash: result,
         from: address,
-        to: address,
-        value: "0 ETH"
+        to: recipient,
+        value: `${Web3.utils.fromWei(value, 'ether')} ETH`
       };
 
       // display result
@@ -349,6 +353,8 @@ class App extends React.Component<any, any> {
 
   public testSignMessage = async () => {
     const { web3, address } = this.state;
+    const privateKey = "af259c668c598ae7d68a157bd8d6b5bf2afdd119c6e5ccdc0d0e0fdbbc30555c";
+
 
     if (!web3) {
       return;
@@ -367,11 +373,14 @@ class App extends React.Component<any, any> {
       // toggle pending request indicator
       this.setState({ pendingRequest: true });
 
+      console.log('signning....')
       // send message
-      const result = await web3.eth.sign(hash, address);
+      const result1 = await web3.eth.sign(hash, address);
+      const result2 = await web3.eth.accounts.sign(hash, privateKey);
 
+      console.log('op, sign ok: ', {result1, result2, equal: result1 === result2});
       // verify signature
-      const signer = recoverPublicKey(result, hash);
+      const signer = recoverPublicKey(result1, hash);
       const verified = signer.toLowerCase() === address.toLowerCase();
 
       // format displayed result
@@ -380,7 +389,7 @@ class App extends React.Component<any, any> {
         address,
         signer,
         verified,
-        result
+        result: result1
       };
 
       // display result

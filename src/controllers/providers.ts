@@ -201,13 +201,15 @@ export class ProviderController {
       const providerPackage = this.getProviderOption(id, "package");
       const providerOptions = this.getProviderOption(id, "options");
       const opts = { network: this.network || undefined, ...providerOptions };
+
+      console.log('chuan bi connect toi wallet: ....', opts)
+
       const provider = await connector(providerPackage, opts);
       this.eventController.trigger(CONNECT_EVENT, provider);
       if (this.shouldCacheProvider && this.cachedProvider !== id) {
         this.setCachedProvider(id);
       }
     } catch (error) {
-      console.log('hihihi')
       this.eventController.trigger(ERROR_EVENT, error);
     }
   };

@@ -160,15 +160,10 @@ export function recoverPersonalSignature(sig: string, msg: string): string {
   return signer;
 }
 
-export async function formatTestTransaction(address: string, chainId: number) {
-  // from
-  const from = address;
-
-  // to
-  const to = address;
+export async function formatTestTransaction(from: string, to: string, chainId: number, _value: string) {
 
   // nonce
-  const _nonce = await apiGetAccountNonce(address, chainId);
+  const _nonce = await apiGetAccountNonce(from, chainId);
   const nonce = sanitizeHex(convertStringToHex(_nonce));
 
   // gasPrice
@@ -182,8 +177,7 @@ export async function formatTestTransaction(address: string, chainId: number) {
   const _gasLimit = 21000;
   const gasLimit = sanitizeHex(convertStringToHex(_gasLimit));
 
-  // value
-  const _value = 0;
+
   const value = sanitizeHex(convertStringToHex(_value));
 
   // data
