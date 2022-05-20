@@ -391,7 +391,6 @@ class App extends React.Component<any, any> {
         address,
         signer,
         verified,
-        result: result1
       };
 
       // display result

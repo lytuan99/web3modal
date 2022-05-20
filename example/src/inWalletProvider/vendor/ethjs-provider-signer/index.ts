@@ -127,7 +127,7 @@ class SignerProvider {
   options: any;
 
   constructor(path: string, options: SignProviderOptions) {
-    console.log('signer provider: ', options)
+    console.log("signer provider: ", options);
     this.provider = new HTTPProvider(path, options.timeout || 0);
     this.rpc = new EthRPC(this.provider, {});
   }
@@ -147,7 +147,11 @@ class SignerProvider {
 
         callback(accountsError, inputPayload);
       });
-    } else if (payload.method === "eth_sendTransaction") {
+    } else if (
+      payload.method === "eth_sendTransaction" &&
+      payload &&
+      payload.params
+    ) {
       // get the nonce, if any
       this.rpc.sendAsync(
         {
@@ -170,7 +174,7 @@ class SignerProvider {
             {
               method: "eth_gasPrice",
               params: [],
-              jsonrpc: ''
+              jsonrpc: ""
             },
             (gasPriceError: any, gasPrice: any) => {
               // eslint-disable-line
@@ -183,14 +187,21 @@ class SignerProvider {
                 );
               }
 
-              // build raw tx payload with nonce and gasprice as defaults to be overriden
-              var rawTxPayload = Object.assign(
-                {
+              var rawTxPayload;
+              if (payload && payload.params)
+                // build raw tx payload with nonce and gasprice as defaults to be overriden
+                rawTxPayload = Object.assign(
+                  {
+                    nonce: nonce,
+                    gasPrice: gasPrice
+                  },
+                  payload?.params[0]
+                );
+              else
+                rawTxPayload = Object.assign({
                   nonce: nonce,
                   gasPrice: gasPrice
-                },
-                payload.params[0]
-              );
+                });
 
               // sign transaction with raw tx payload
               this.options.signTransaction(

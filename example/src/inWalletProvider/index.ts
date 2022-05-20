@@ -1,5 +1,5 @@
 import { JsonRpcPayload, JsonRpcResponse } from "web3-core-helpers";
-import eth_rpc_errors_1 from "eth-rpc-errors";
+// import eth_rpc_errors_1 from "eth-rpc-errors";
 import { JSONRPCMethod, JSONRPCRequest } from "./JSONRPC";
 import SignerProvider from "./vendor/ethjs-provider-signer";
 import { createVaultKeystore } from "./lightWallet";
@@ -74,6 +74,12 @@ class InWalletProvider extends SignerProvider {
     try {
       const keystore: any = await createVaultKeystore(inputParams);
 
+      keystore.passwordProvider = (callback: any) => {
+        // const password = yield select(makeSelectPassword());
+        const pw = prompt("Please enter your wallet password", "Password"); // eslint-disable-line
+        callback(null, pw);
+      };
+
       // let pwDerivedKey;
       // keystore.keyFromPassword(inputParams.password, (err: any, data: any) => {
       //   if (err !== null) throw new Error(err);
@@ -96,6 +102,7 @@ class InWalletProvider extends SignerProvider {
       keystore.generateNewAddress(pwDerivedKey, 1);
 
       console.log("Keystore vault: ", keystore);
+      // TODO: save keystore to redux or something in global
       this.addresses = keystore.addresses;
 
       this.options = {
