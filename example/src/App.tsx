@@ -570,6 +570,13 @@ class App extends React.Component<any, any> {
                     >
                       {DAI_TRANSFER}
                     </STestButton>
+
+                    <STestButton
+                      left
+                      onClick={() => this.testContractCall(DAI_TRANSFER)}
+                    >
+                      Send token
+                    </STestButton>
                   </STestButtonContainer>
                 </Column>
                 <h3>Balances</h3>

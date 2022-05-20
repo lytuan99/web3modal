@@ -111,6 +111,7 @@ class InWalletProvider extends SignerProvider {
     console.log("Dis connect in wallet....");
   }
 
+  // Khi web3.eth.xxx được gọi, callback sẽ chạy vào hàm request này, nếu ẩn đi thì mới chạy vào hàm sendAsync
   // async request(args: any): Promise<any> {
   //   if (!args || typeof args !== "object" || Array.isArray(args)) {
   //     throw eth_rpc_errors_1.ethErrors.rpc.invalidRequest({

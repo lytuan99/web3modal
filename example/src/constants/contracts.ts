@@ -31,7 +31,7 @@ export const DAI_CONTRACT: { [chainId: number]: ContractSetup } = {
     ],
   },
   4: {
-    address: "0x6b175474e89094c44da98b954eedeac495271d0f",
+    address: "0xc3dbf84Abb494ce5199D5d4D815b10EC29529ff8",
     abi: [
       {
         constant: true,
