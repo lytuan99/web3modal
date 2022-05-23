@@ -59,7 +59,7 @@ class InWalletProvider extends SignerProvider {
     super.sendAsync(payload, callback);
   }
 
-  async enable() {
+  async enable(dialog: any) {
     // TODO: check xem đã có keystore trong localStorage chưa,
     // Nếu chưa có thì yêu cầu tạo hoặc import
     // Nếu có rồi thì thực hiện tạo
@@ -74,8 +74,10 @@ class InWalletProvider extends SignerProvider {
     try {
       const keystore: any = await createVaultKeystore(inputParams);
 
-      keystore.passwordProvider = (callback: any) => {
+      keystore.passwordProvider = async (callback: any) => {
         // const password = yield select(makeSelectPassword());
+        const password = await dialog.prompt('Enter your password').done;
+        console.log("PASSWORD: ", password);
         const pw = prompt("Please enter your wallet password", "Password"); // eslint-disable-line
         callback(null, pw);
       };
