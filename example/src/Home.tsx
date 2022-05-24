@@ -155,6 +155,8 @@ function initWeb3(provider: any) {
     ]
   });
 
+  // web3.eth.transactionPollingTimeout = 10;
+
   return web3;
 }
 
@@ -165,7 +167,6 @@ class Home extends React.Component<any, any> {
 
 
   constructor(props: any) {
-    console.log("PROPS: ", props);
     super(props);
     this.state = {
       ...INITIAL_STATE

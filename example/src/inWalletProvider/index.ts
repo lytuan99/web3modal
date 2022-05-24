@@ -1,5 +1,5 @@
 import { JsonRpcPayload, JsonRpcResponse } from "web3-core-helpers";
-// import eth_rpc_errors_1 from "eth-rpc-errors";
+import eth_rpc_errors_1 from "eth-rpc-errors";
 import { JSONRPCMethod, JSONRPCRequest } from "./JSONRPC";
 import SignerProvider from "./vendor/ethjs-provider-signer";
 import { createVaultKeystore } from "./lightWallet";
@@ -76,10 +76,10 @@ class InWalletProvider extends SignerProvider {
 
       keystore.passwordProvider = async (callback: any) => {
         // const password = yield select(makeSelectPassword());
-        const password = await dialog.prompt('Enter your password').done;
+        const password = await dialog.prompt("Enter your password").done;
         console.log("PASSWORD: ", password);
-        const pw = prompt("Please enter your wallet password", "Password"); // eslint-disable-line
-        callback(null, pw);
+        // const pw = prompt("Please enter your wallet password", "Password"); // eslint-disable-line
+        callback(null, password);
       };
 
       // let pwDerivedKey;
@@ -117,11 +117,23 @@ class InWalletProvider extends SignerProvider {
   }
 
   disconnect() {
-    console.log("Dis connect in wallet....");
+    console.log("DIS CONNECT in-app wallet....");
   }
+
+  // async request(payload: any): Promise<any> {
+  //   console.log("Request: ", payload);
+  //   let res;
+  //   super.sendAsync(payload, (error, result) => {
+  //     console.log('callback request: ', { error, result });
+  //     if (!error && result) res = result.result;
+  //     else res = error;
+  //   });
+  //   return res;
+  // }
 
   // Khi web3.eth.xxx được gọi, callback sẽ chạy vào hàm request này, nếu ẩn đi thì mới chạy vào hàm sendAsync
   // async request(args: any): Promise<any> {
+  //   console.log('REQUEST: ', args);
   //   if (!args || typeof args !== "object" || Array.isArray(args)) {
   //     throw eth_rpc_errors_1.ethErrors.rpc.invalidRequest({
   //       message: "Expected a single, non-array, object argument.",
@@ -191,9 +203,10 @@ class InWalletProvider extends SignerProvider {
     }
   }
 
-  async send(payload: any, callback?: any): Promise<any> {
-    console.log("sending ....: ", { payload, callback });
-  }
+  // Không có cũng được
+  // async send(payload: any, callback?: any): Promise<any> {
+  //   console.log("sending ....: ", { payload, callback });
+  // }
 }
 
 export default InWalletProvider;

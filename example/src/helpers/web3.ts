@@ -28,10 +28,12 @@ export function callTransfer(address: string, chainId: number, web3: any) {
 
     const value = 1;
     const cachedProvider = localStorage.getItem("WEB3_CONNECT_CACHED_PROVIDER");
+    const gasPrice = await web3.eth.getGasPrice();
+    console.log('GAS PRICE: ', gasPrice);
+
     let params;
     if (cachedProvider && cachedProvider.includes(IN_WALLET_NAME)) {
       // const gasPrice = (await apiGetGasPrices()).fast.price;
-      const gasPrice = await web3.eth.getGasPrice();
       const gasEstimate = await dai.methods
         .transfer(to, value)
         .estimateGas({ from: address });
@@ -45,7 +47,7 @@ export function callTransfer(address: string, chainId: number, web3: any) {
         nonce
       };
     } else {
-      params = { from: address };
+      params = { from: address, gasPrice: 1099501196 }; // OK metamask có nhận gasPrice này truyền lên
     }
 
     console.log("PARAMS: ", params);
@@ -65,18 +67,12 @@ export function callTransfer(address: string, chainId: number, web3: any) {
       .on("receipt", (receipt: any) => {
         console.log("ON RECEIPT: ", receipt);
       })
-      .on("confirmation", (confirmationNumber: any, receipt: any) => {
-        console.log("ON CONFIRMATION: ", { confirmationNumber, receipt });
-      })
+      // .on("confirmation", (confirmationNumber: any, receipt: any) => {
+      //   console.log("ON CONFIRMATION: ", { confirmationNumber, receipt });
+      // })
       .on("error", (error: any, receipt: any) => {
         // If the transaction was rejected by the network with a receipt, the second parameter will be the receipt.
         console.log("ON ERROR: ", { error, receipt });
-      })
-      .on("sending", (payload: any) => {
-        console.log("ON SENDING: ", payload);
-      })
-      .on("sent", (payload: any) => {
-        console.log("ON SENT ", payload);
       });
   });
 }
