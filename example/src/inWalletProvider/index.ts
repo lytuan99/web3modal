@@ -51,12 +51,19 @@ class InWalletProvider extends SignerProvider {
     this.rpcPath = path;
   }
 
-  sendAsync(
+  async sendAsync(
     payload: JsonRpcPayload,
-    callback: (error: Error | null, result?: JsonRpcResponse) => void
-  ): void {
+    callback: (error: any, result?: JsonRpcResponse) => void
+  ): Promise<any> {
     console.log("payload send async: ", payload);
-    super.sendAsync(payload, callback);
+    try {
+      const res = await super.sendAsync(payload);
+      console.log('Res: ', res);
+      if(res) callback(null, res);
+      callback(new Error('Response not have data'));
+    } catch (error: any){
+      callback(error);
+    }
   }
 
   async enable(dialog: any) {
@@ -109,7 +116,7 @@ class InWalletProvider extends SignerProvider {
 
       this.options = {
         signTransaction: keystore.signTransaction.bind(keystore),
-        accounts: (cb: any) => cb(null, keystore.getAddresses())
+        getAccounts: (cb: any) => cb(null, keystore.getAddresses())
       };
     } catch (error) {
       console.error("Create keystore vault error", error);
