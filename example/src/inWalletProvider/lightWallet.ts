@@ -1,6 +1,5 @@
 import lightwallet from "eth-lightwallet";
 
-
 /* keyStore.createVault({password: password,
     seedPhrase: '(opt)seed',entropy: '(opt)additional entropy',salt: '(opt)'}, function (err, ks) {}); */
 export function createVaultKeystore(param: any) {
@@ -11,3 +10,9 @@ export function createVaultKeystore(param: any) {
     });
   });
 }
+
+export const createSeedPhrase = () => {
+  const mnemonic = lightwallet.keystore.generateRandomSeed();
+  console.log('MNEMONIC: ', mnemonic);
+  return mnemonic;
+};

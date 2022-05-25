@@ -2,7 +2,7 @@ import { JsonRpcPayload, JsonRpcResponse } from "web3-core-helpers";
 import eth_rpc_errors_1 from "eth-rpc-errors";
 import { JSONRPCMethod, JSONRPCRequest } from "./JSONRPC";
 import SignerProvider from "./vendor/ethjs-provider-signer";
-import { createVaultKeystore } from "./lightWallet";
+import { createSeedPhrase, createVaultKeystore } from "./lightWallet";
 
 const DEFAULT_CHAIN_ID_KEY = "defaultChainId";
 interface InWalletProviderOptions {
@@ -64,11 +64,11 @@ class InWalletProvider extends SignerProvider {
     // Nếu chưa có thì yêu cầu tạo hoặc import
     // Nếu có rồi thì thực hiện tạo
     console.log("Connecting in wallet....");
-
+    const seedPhrase = "illegal practice attend twenty excess credit canyon loyal return giggle fiber syrup";
+    const mnemonic = createSeedPhrase();
     const inputParams = {
       password: "111111",
-      seedPhrase:
-        "illegal practice attend twenty excess credit canyon loyal return giggle fiber syrup",
+      seedPhrase: mnemonic,
       hdPathString: `m/44'/60'/0'/0`
     };
     try {
