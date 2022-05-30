@@ -31,6 +31,7 @@ class HTTPProvider {
   ) {
     try {
       const response = await axios({
+        url: this.host,
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -109,12 +110,11 @@ class EthRPC {
   ) {
     this.idCounter = this.idCounter % 99999999;
     const transferPayload = createPayload(payload, this.idCounter++);
-    const response: {
-      data: JsonRpcResponse;
-    } = await this.currentProvider.sendAsync(transferPayload);
+    const response: JsonRpcResponse = await this.currentProvider.sendAsync(
+      transferPayload
+    );
 
-    const { data } = response;
-    return data.result;
+    return response?.result;
 
     // this.currentProvider.sendAsync(
     //   createPayload(payload, this.idCounter++),
