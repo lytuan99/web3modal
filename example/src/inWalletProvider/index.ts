@@ -57,11 +57,19 @@ class InWalletProvider extends SignerProvider {
   ): Promise<any> {
     console.log("payload send async: ", payload);
     try {
-      const res = await super.sendAsync(payload);
-      console.log('Res: ', res);
-      if(res) callback(null, res);
-      callback(new Error('Response not have data'));
-    } catch (error: any){
+      if (payload.method === "eth_sendTransaction") {
+        // Xử lý tạm thời chỗ này vì bên trong có hàm signTransaction của lib vẫn là callback
+        await super.sendAsync(payload, (error, res) => {
+          if (res) callback(null, res);
+          else callback(new Error("Response not have data"));
+        });
+      } else {
+        const res = await super.sendAsync(payload, () => {});
+        console.log("Res: ", res);
+        if (res) callback(null, res);
+        else callback(new Error("Response not have data"));
+      }
+    } catch (error) {
       callback(error);
     }
   }
@@ -71,11 +79,12 @@ class InWalletProvider extends SignerProvider {
     // Nếu chưa có thì yêu cầu tạo hoặc import
     // Nếu có rồi thì thực hiện tạo
     console.log("Connecting in wallet....");
-    const seedPhrase = "illegal practice attend twenty excess credit canyon loyal return giggle fiber syrup";
+    const seedPhrase =
+      "illegal practice attend twenty excess credit canyon loyal return giggle fiber syrup";
     const mnemonic = createSeedPhrase();
     const inputParams = {
       password: "111111",
-      seedPhrase: mnemonic,
+      seedPhrase: seedPhrase,
       hdPathString: `m/44'/60'/0'/0`
     };
     try {
@@ -83,10 +92,10 @@ class InWalletProvider extends SignerProvider {
 
       keystore.passwordProvider = async (callback: any) => {
         // const password = yield select(makeSelectPassword());
-        const password = await dialog.prompt("Enter your password").done;
-        console.log("PASSWORD: ", password);
-        // const pw = prompt("Please enter your wallet password", "Password"); // eslint-disable-line
-        callback(null, password);
+        // const password = await dialog.prompt("Enter your password");
+        // console.log("PASSWORD: ", password);
+        const pw = prompt("Please enter your wallet password", "Password"); // eslint-disable-line
+        callback(null, pw);
       };
 
       // let pwDerivedKey;
@@ -115,6 +124,7 @@ class InWalletProvider extends SignerProvider {
       this.addresses = keystore.addresses;
 
       this.options = {
+        // TODO: bên artemis FE cần viết 1 function signTransaction async/await thay vì callback
         signTransaction: keystore.signTransaction.bind(keystore),
         getAccounts: (cb: any) => cb(null, keystore.getAddresses())
       };

@@ -162,7 +162,7 @@ class SignerProvider {
 
   async sendAsync(
     payload: JsonRpcPayload,
-    callback?: (error: Error | null, result?: JsonRpcResponse) => void
+    callback: (error: Error | null, result?: JsonRpcResponse) => void
   ) {
     if (payload.method === "eth_accounts" && this.options.getAccounts) {
       let accounts;
@@ -212,16 +212,24 @@ class SignerProvider {
           gasPrice: gasPrice
         });
 
-      const signedTx = await this.options.signTransaction(rawTxPayload);
-      const reqPayload = {
-        id: payload.id,
-        jsonrpc: payload.jsonrpc,
-        method: "eth_sendRawTransaction",
-        params: [signedTx]
-      };
+      let result;
+      const sendAsync = this.provider.sendAsync.bind(this.provider);
+      // TODO: Sau này sẽ phải viết function signTransaction dạng async/await
+      // chứ k để callback thế này
+      // Khi thay thế được func async signTransaction thì toàn bộ phần còn lại mới có thể sử dụng như async/await được
+      this.options.signTransaction(rawTxPayload, async (error: any, signedTx: any) => {
+        const reqPayload = {
+          id: payload.id,
+          jsonrpc: payload.jsonrpc,
+          method: "eth_sendRawTransaction",
+          params: [signedTx]
+        };
 
-      const result = await this.provider.sendAsync(reqPayload);
-      return result;
+        console.log('Payload last one: ', reqPayload);
+
+        result = await sendAsync(reqPayload);
+        callback(null, result);
+      });
     } else {
       const result = await this.provider.sendAsync(payload);
       return result;

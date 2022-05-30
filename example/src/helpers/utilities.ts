@@ -164,6 +164,7 @@ export async function formatTestTransaction(from: string, to: string, chainId: n
 
   // nonce
   const _nonce = await apiGetAccountNonce(from, chainId);
+
   const nonce = sanitizeHex(convertStringToHex(_nonce));
 
   // gasPrice
