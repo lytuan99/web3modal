@@ -57,18 +57,10 @@ class InWalletProvider extends SignerProvider {
   ): Promise<any> {
     console.log("payload send async: ", payload);
     try {
-      if (payload.method === "eth_sendTransaction") {
-        // Xử lý tạm thời chỗ này vì bên trong có hàm signTransaction của lib vẫn là callback
-        await super.sendAsync(payload, (error, res) => {
-          if (res) callback(null, res);
-          else callback(new Error("Response not have data"));
-        });
-      } else {
-        const res = await super.sendAsync(payload, () => {});
-        console.log("Res: ", res);
-        if (res) callback(null, res);
-        else callback(new Error("Response not have data"));
-      }
+      const res = await super.send(payload);
+      console.log("Res: ", res);
+      if (res) callback(null, res);
+      else callback(new Error("Response not have data"));
     } catch (error) {
       callback(error);
     }
@@ -92,10 +84,10 @@ class InWalletProvider extends SignerProvider {
 
       keystore.passwordProvider = async (callback: any) => {
         // const password = yield select(makeSelectPassword());
-        // const password = await dialog.prompt("Enter your password");
-        // console.log("PASSWORD: ", password);
-        const pw = prompt("Please enter your wallet password", "Password"); // eslint-disable-line
-        callback(null, pw);
+        const password = await dialog.prompt("Enter your password");
+        console.log("PASSWORD: ", password);
+        // const pw = prompt("Please enter your wallet password", "Password"); // eslint-disable-line
+        callback(null, password);
       };
 
       // let pwDerivedKey;
@@ -119,7 +111,7 @@ class InWalletProvider extends SignerProvider {
 
       keystore.generateNewAddress(pwDerivedKey, 1);
 
-      console.log("Keystore vault: ", keystore);
+      console.log("Keystore vault: ", keystore, pwDerivedKey);
       // TODO: save keystore to redux or something in global
       this.addresses = keystore.addresses;
 

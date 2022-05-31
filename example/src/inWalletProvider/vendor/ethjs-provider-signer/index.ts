@@ -160,10 +160,7 @@ class SignerProvider {
     this.rpc = new EthRPC(this.provider, {});
   }
 
-  async sendAsync(
-    payload: JsonRpcPayload,
-    callback: (error: Error | null, result?: JsonRpcResponse) => void
-  ) {
+  async send(payload: JsonRpcPayload) {
     if (payload.method === "eth_accounts" && this.options.getAccounts) {
       let accounts;
       this.options.getAccounts((accountsError: any, result: []) => {
@@ -196,7 +193,7 @@ class SignerProvider {
 
       const gasPrice = await this.rpc.sendAsync(getGasPricePayload);
 
-      var rawTxPayload;
+      var rawTxPayload: any;
       if (payload && payload.params)
         // build raw tx payload with nonce and gasprice as defaults to be overriden
         rawTxPayload = Object.assign(
@@ -212,24 +209,31 @@ class SignerProvider {
           gasPrice: gasPrice
         });
 
-      let result;
-      const sendAsync = this.provider.sendAsync.bind(this.provider);
-      // TODO: Sau này sẽ phải viết function signTransaction dạng async/await
-      // chứ k để callback thế này
-      // Khi thay thế được func async signTransaction thì toàn bộ phần còn lại mới có thể sử dụng như async/await được
-      this.options.signTransaction(rawTxPayload, async (error: any, signedTx: any) => {
-        const reqPayload = {
-          id: payload.id,
-          jsonrpc: payload.jsonrpc,
-          method: "eth_sendRawTransaction",
-          params: [signedTx]
-        };
+      const executeSignTransaction = () =>
+        new Promise((resolve, reject) => {
+          this.options.signTransaction(
+            rawTxPayload,
+            (error: any, signedTx: any) => {
+              if (error) reject(error);
+              else resolve(signedTx);
+            }
+          );
+        });
 
-        console.log('Payload last one: ', reqPayload);
+      const signedTx = await executeSignTransaction();
+      console.log("SIGNED TX async await: ", signedTx);
 
-        result = await sendAsync(reqPayload);
-        callback(null, result);
-      });
+      const reqPayload = {
+        id: payload.id,
+        jsonrpc: payload.jsonrpc,
+        method: "eth_sendRawTransaction",
+        params: [signedTx]
+      };
+      console.log("Payload last one: ", reqPayload);
+
+      const result = await this.provider.sendAsync(reqPayload);
+
+      return result;
     } else {
       const result = await this.provider.sendAsync(payload);
       return result;
